@@ -98,6 +98,15 @@ namespace {
 
         Value *codegen() override;
     };
+
+    class VarExprAST : public ExprAST {
+        std::vector<std::string> VarNames;
+        std::unique_ptr<ExprAST> VarValue;
+
+        public:
+        VarExprAST(std::vector<std::string> VarNames, std::unique_ptr<ExprAST> VarValue) : VarNames(std::move(VarNames)), VarValue(std::move(VarValue)) {}
+        Value *codegen() override;
+    };
 } // end anonymous namespace
 
 //===----------------------------------------------------------------------===//
@@ -248,10 +257,58 @@ static std::unique_ptr<ExprAST> ParseIfExpr() {
     return llvm::make_unique<IfExprAST>(std::move(condition), std::move(then_expression), std::move(else_expression));
 }
 
+static std::unique_ptr<ExprAST> ParseVarExpr() {
+    getNextToken(); // skip var
+    std::vector<std::string> VarNames;
+
+    if (CurTok != tok_identifier)
+        return LogError("Expected identifier after var in ParseVarExpr");
+    std::string Name = lexer.getIdentifier();
+    VarNames.push_back(Name);
+    getNextToken();
+    if (CurTok != '=')
+        return LogError("Expected `=`, Uninitialize Var in ParseVarExpr()");
+    getNextToken(); // skip `=`
+    auto VarValue = ParseExpression();
+    if (!VarValue)
+        LogError("Variable Initialize Failed in ParseVarExpr");
+    return llvm::make_unique<VarExprAST>(std::move(VarNames), std::move(VarValue));
+    // while(true) {
+    //     std::string Name = lexer.getIdentifier();
+    //     getNextToken(); // skip identifier
+        
+    //     std::unique_ptr<ExprAST> Init = nullptr;
+    //     if (CurTok == '=') {
+    //         getNextToken(); // skip `=`
+    //         Init = ParseExpression();
+    //         if (!Init)
+    //             return nullptr;
+    //     }
+
+    //     VarNames.push_back(std::make_pair(Name, std::move(Init)));
+
+    //     if (CurTok != ',')
+    //         break;
+    //     getNextToken(); // skip `,`
+    //     if (CurTok != tok_identifier)
+    //         return LogError("Expected identifier list after var in ParseVarExpr");
+    // }
+    // if (CurTok != ';')
+    //     return LogError("Expected `;` after arg list in ParseVarExpr");
+    // getNextToken();
+    // auto Body = ParseExpression();
+    // if (!Body)
+    //     return nullptr;
+    
+    // return llvm::make_unique<VarExprAST>(std::move(VarNames), std::move(Body));
+}
+
+
 // ParsePrimary - NumberASTか括弧をパースする関数
 static std::unique_ptr<ExprAST> ParsePrimary() {
     switch (CurTok) {
         default:
+            // std::cout<<CurTok<<std::endl;   
             return LogError("unknown token when expecting an expression");
         case tok_identifier:
             return ParseIdentifierExpr();
@@ -261,6 +318,8 @@ static std::unique_ptr<ExprAST> ParsePrimary() {
             return ParseParenExpr();
         case tok_if:
             return ParseIfExpr();
+        case tok_var:
+            return ParseVarExpr();
     }
 }
 

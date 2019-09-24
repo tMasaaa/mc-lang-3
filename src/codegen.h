@@ -211,6 +211,10 @@ Value *IfExprAST::codegen() {
     return PN;
 }
 
+Value *VarExprAST::codegen() {
+    return nullptr;
+}
+
 //===----------------------------------------------------------------------===//
 // MC コンパイラエントリーポイント
 // mc.cppでMainLoop()が呼ばれます。MainLoopは各top level expressionに対して
