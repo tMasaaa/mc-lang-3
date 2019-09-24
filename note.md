@@ -171,3 +171,11 @@ real	0m0.005s
 user	0m0.001s
 sys	0m0.003s
 ```
+
+丁寧なmdありがとうございます！回を経る毎に詳しくなってらっしゃる様子が分かり素晴らしいです。
+> 疑問1
+このページ(https://llvm.org/docs/LangRef.html#icmp-instruction)にi1かi1のベクタを返すよと書いてあります。
+> 疑問2
+それこそPythonのようにインデント..という手も考えられますが、ブロックスコープが圧倒的に筋が良いと思います。
+> 変数定義
+mutableな変数ってどうやるのか混乱しますよね。こちらのチュートリアル(https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl07.html)を参考にするのが良いと思います。変数の中身をスタックに積んだり出したりする事で、SSAになるようにしています。ほぼidentifierのパースと同じですが、予約語"var"を導入し、NamedValuesでValue*をそのまま覚える代わりに「Valueが入っているメモリの位置」を覚えています。
